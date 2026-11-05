@@ -1,8 +1,14 @@
+<div align="center">
+
 # dpi-proxy
 
-An HTTP proxy for Linux x86-64 that helps applications reach services blocked by network traffic inspection.
+**An HTTP proxy for Linux x86-64 that helps applications reach services blocked by network traffic inspection.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/dpi-proxy/ci.yml?branch=main)](https://github.com/Delnegend/dpi-proxy/actions) [![Release](https://img.shields.io/github/v/release/Delnegend/dpi-proxy)](https://github.com/Delnegend/dpi-proxy/releases) [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
+
+</div>
+
+---
 
 ## Quick start
 
