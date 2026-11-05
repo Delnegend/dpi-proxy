@@ -8,11 +8,20 @@ On Linux x86-64 with [Homebrew](https://brew.sh/):
 
 ```bash
 brew install Delnegend/tap/dpi-proxy
-dpi-proxy
+brew services start dpi-proxy
 
-# In another terminal, test an HTTPS connection through it.
-curl --proxy http://127.0.0.1:1080 https://store.steampowered.com/ -o /dev/null -w '%{http_code}\n'
+# Check the proxy can reach the Steam Store.
+curl --noproxy '' --proxy http://127.0.0.1:18118 https://store.steampowered.com/ -o /dev/null -w '%{http_code}\n'
 ```
+
+The service starts at login and listens only on this machine. Set your application's HTTP and HTTPS proxy to `http://127.0.0.1:18118`. Check or stop it with:
+
+```bash
+brew services info dpi-proxy
+brew services stop dpi-proxy
+```
+
+Running `dpi-proxy` directly instead uses port `1080` by default.
 
 - Accepts ordinary HTTP proxy requests and HTTPS `CONNECT` tunnels.
 - Applies ByeDPI-style traffic splitting to outbound connections.

@@ -9,6 +9,14 @@ brew install Delnegend/tap/dpi-proxy
 dpi-proxy
 ```
 
+To start it automatically at login instead:
+
+```bash
+brew services start dpi-proxy
+```
+
+The Homebrew service listens only on `127.0.0.1:18118`; a manual `dpi-proxy` launch defaults to port `1080`.
+
 Alternatively, download the `x86_64-unknown-linux-musl.tar.xz` archive from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest), extract it, and run the `dpi-proxy` executable in its top-level directory. The archive also contains the license files.
 
 To run the published container on one trusted host address, substitute the host's LAN address:
