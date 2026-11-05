@@ -120,6 +120,15 @@ jobs:
           ref: ${{ needs.prepare.outputs.ref }}
           fetch-depth: 0
 
+      # The shared build action writes its registry cache even for test builds.
+      - name: Log in for test-build cache
+        if: needs.prepare.outputs.publish != 'true'
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push image
         id: build
         uses: Delnegend/actions/docker-build-push@f8687fdc288837d994b43118f44972b9b8e7b2aa # v1
