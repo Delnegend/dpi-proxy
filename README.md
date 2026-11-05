@@ -2,9 +2,11 @@
 
 An HTTP proxy for Linux x86-64 that helps applications reach services blocked by network traffic inspection.
 
+[![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/dpi-proxy/ci.yml?branch=main)](https://github.com/Delnegend/dpi-proxy/actions) [![Release](https://img.shields.io/github/v/release/Delnegend/dpi-proxy)](https://github.com/Delnegend/dpi-proxy/releases) [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
+
 ## Quick start
 
-On Linux x86-64 with [Homebrew](https://brew.sh/):
+On Linux x86-64 with [Homebrew](https://brew.sh/) and a systemd user session:
 
 ```bash
 brew install Delnegend/tap/dpi-proxy
@@ -23,9 +25,11 @@ brew services stop dpi-proxy
 
 Running `dpi-proxy` directly instead uses port `1080` by default.
 
-- Accepts ordinary HTTP proxy requests and HTTPS `CONNECT` tunnels.
-- Applies ByeDPI-style traffic splitting to outbound connections.
-- Runs as a standalone executable or non-root container.
+## Highlights
+
+- Connect applications using ordinary HTTP proxy requests or HTTPS tunnels.
+- Split outgoing TLS traffic to help connections pass traffic inspection.
+- Run locally as a service, standalone executable, or non-root container.
 
 **Security:** The proxy has no authentication. Bind the published port to a trusted interface and use a firewall if other machines need access. Traffic between the client and the proxy is not encrypted by the proxy; HTTPS remains encrypted end to end.
 
@@ -34,6 +38,7 @@ For container usage and release archives, see [Deployment](docs/deployment.md).
 ## Documentation
 
 - [Configuration](docs/configuration.md)
+- [Architecture](docs/architecture.md)
 - [Deployment](docs/deployment.md)
 - [Development](docs/development.md)
 

@@ -10,6 +10,8 @@ Set environment variables directly or place a `.env` file in the process's curre
 | `DPI_PROXY_RETRY_ON_RESET` | `true` | Retry once without the split after a reset or timeout, when splitting is enabled |
 | `DPI_PROXY_TIMEOUT_SECS` | `3` | Seconds to wait for the first TLS response; fractional values are allowed |
 
+These defaults apply to a direct executable launch. The Homebrew service sets port `18118` and explicitly sets the other variables to their defaults.
+
 Boolean values are `true` or `false`. The default bypass matches the existing ByeDPI settings `-r 1+s --auto=torst --timeout 3`. Ordinary HTTP requests are forwarded without replaying them. Command-line arguments are not supported.
 
 For a container, pass settings with `-e` or `--env-file`:

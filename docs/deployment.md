@@ -2,20 +2,36 @@
 
 The executable and container target Linux x86-64.
 
+## Install
+
 Install the executable with Homebrew:
 
 ```bash
 brew install Delnegend/tap/dpi-proxy
-dpi-proxy
 ```
 
-To start it automatically at login instead:
+## Run as a service
+
+Start it automatically at login:
 
 ```bash
 brew services start dpi-proxy
 ```
 
 The Homebrew service listens only on `127.0.0.1:18118`; a manual `dpi-proxy` launch defaults to port `1080`.
+
+Check the service or read its logs:
+
+```bash
+brew services info dpi-proxy
+journalctl --user -u sh.brew.dpi-proxy.service -f
+```
+
+## Upgrade
+
+Upgrade with `brew upgrade dpi-proxy`, then restart with `brew services restart dpi-proxy`.
+
+## Other deployment options
 
 Alternatively, download the `x86_64-unknown-linux-musl.tar.xz` archive from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest), extract it, and run the `dpi-proxy` executable in its top-level directory. The archive also contains the license files.
 
