@@ -1,0 +1,6 @@
+[registry]
+# Enforced by Cargo 1.100 and later; the update workflow checks support first.
+global-min-publish-age = "14 days"
+
+[resolver]
+incompatible-publish-age = "deny"
