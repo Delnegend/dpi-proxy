@@ -17,7 +17,7 @@ For a container, pass settings with `-e` or `--env-file`:
 ```bash
 podman run --rm -p 127.0.0.1:1080:1080 \
   -e DPI_PROXY_TIMEOUT_SECS=3 \
-  "dpi-proxy:$(just version get)"
+  ghcr.io/delnegend/dpi-proxy:latest
 ```
 
 The proxy does not authenticate clients or encrypt the client-to-proxy connection. Publish it only to a trusted interface and restrict network access. It handles one ordinary HTTP request per connection and closes it after the response; HTTPS `CONNECT` remains a byte stream.

@@ -73,13 +73,46 @@ jobs:
           semver-next: ${{ steps.semver.outputs.next }}
           semver-next-strict: ${{ steps.semver.outputs.nextStrict }}
 
-  build:
-    name: Build & Release Artifacts
+  build-binary:
+    name: Build Linux x86_64 binary
+    needs: prepare
+    if: needs.prepare.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ needs.prepare.outputs.ref }}
+
+      - name: Install musl linker
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends musl-tools
+
+      - uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
+        with:
+          targets: x86_64-unknown-linux-musl
+
+      - name: Build executable
+        shell: bash
+        run: cargo build --release --locked --target x86_64-unknown-linux-musl
+
+      - name: Package executable
+        uses: Delnegend/actions/package-artifact@cc01ad7470776ce23b38f14823a86d560e2d592e # v1
+        with:
+          name: dpi-proxy
+          version: ${{ needs.prepare.outputs.version }}
+          target: x86_64-unknown-linux-musl
+          source: target/x86_64-unknown-linux-musl/release/dpi-proxy
+          extra: LICENSE-MIT LICENSE-APACHE
+
+  build-container:
+    name: Build container image
     needs: prepare
     if: needs.prepare.outputs.skip != 'true'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       packages: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -95,11 +128,17 @@ jobs:
           publish: ${{ needs.prepare.outputs.publish }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
+  publish:
+    name: Publish Consolidated Release
+    needs: [prepare, build-binary, build-container]
+    if: needs.prepare.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
       - name: Publish Consolidated Release
         uses: Delnegend/actions/publish-release@cc01ad7470776ce23b38f14823a86d560e2d592e # v1
         with:
           ref: ${{ needs.prepare.outputs.ref }}
           publish: ${{ needs.prepare.outputs.publish }}
-          download: "false"
+          download: "true"
           image: ${{ env.IMAGE }}
           version: ${{ needs.prepare.outputs.version }}

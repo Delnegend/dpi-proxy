@@ -4,14 +4,11 @@ An HTTP proxy for Linux x86-64 that helps applications reach services blocked by
 
 ## Quick start
 
-Requires Podman and `just`.
+On Linux x86-64 with [Homebrew](https://brew.sh/):
 
 ```bash
-# Build the local image.
-podman build -t "dpi-proxy:$(just version get)" .
-
-# Expose the proxy only to this machine.
-podman run --rm -p 127.0.0.1:1080:1080 "dpi-proxy:$(just version get)"
+brew install Delnegend/tap/dpi-proxy
+dpi-proxy
 
 # In another terminal, test an HTTPS connection through it.
 curl --proxy http://127.0.0.1:1080 https://store.steampowered.com/ -o /dev/null -w '%{http_code}\n'
@@ -19,9 +16,11 @@ curl --proxy http://127.0.0.1:1080 https://store.steampowered.com/ -o /dev/null 
 
 - Accepts ordinary HTTP proxy requests and HTTPS `CONNECT` tunnels.
 - Applies ByeDPI-style traffic splitting to outbound connections.
-- Ships as a non-root container, with the listener limited by the published port.
+- Runs as a standalone executable or non-root container.
 
 **Security:** The proxy has no authentication. Bind the published port to a trusted interface and use a firewall if other machines need access. Traffic between the client and the proxy is not encrypted by the proxy; HTTPS remains encrypted end to end.
+
+For container usage and release archives, see [Deployment](docs/deployment.md).
 
 ## Documentation
 
