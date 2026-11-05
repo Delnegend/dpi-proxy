@@ -1,0 +1,14 @@
+name: Auto-merge dependencies and releases
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    uses: Delnegend/actions/.github/workflows/reusable-auto-merge.yml@cc01ad7470776ce23b38f14823a86d560e2d592e # v1
+
