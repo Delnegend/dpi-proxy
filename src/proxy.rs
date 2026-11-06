@@ -34,6 +34,7 @@ pub(crate) async fn serve(listener: TcpListener, config: Arc<BypassConfig>) -> i
             .await
             .map_err(|_| io::Error::other("proxy stopped"))?;
         let (stream, _) = listener.accept().await?;
+        let _ = stream.set_nodelay(true);
         let config = config.clone();
         tokio::spawn(async move {
             let _permit = permit;
@@ -124,7 +125,7 @@ async fn handle(mut stream: TcpStream, config: &BypassConfig) -> io::Result<()> 
             Ok(target) => target,
             Err(error) => return response(&mut stream, error.status, error.reason).await,
         };
-        let upstream = match timeout(CONNECT_TIMEOUT, TcpStream::connect(&target)).await {
+        let upstream = match timeout(CONNECT_TIMEOUT, bypass::connect(&target)).await {
             Ok(Ok(upstream)) => upstream,
             Ok(Err(_)) => return response(&mut stream, 502, "Bad Gateway").await,
             Err(_) => return response(&mut stream, 504, "Gateway Timeout").await,
@@ -149,7 +150,7 @@ async fn handle(mut stream: TcpStream, config: &BypassConfig) -> io::Result<()> 
         Ok(headers) => headers,
         Err(error) => return response(&mut stream, error.status, error.reason).await,
     };
-    let upstream = match timeout(CONNECT_TIMEOUT, TcpStream::connect(&target)).await {
+    let upstream = match timeout(CONNECT_TIMEOUT, bypass::connect(&target)).await {
         Ok(Ok(upstream)) => upstream,
         Ok(Err(_)) => return response(&mut stream, 502, "Bad Gateway").await,
         Err(_) => return response(&mut stream, 504, "Gateway Timeout").await,

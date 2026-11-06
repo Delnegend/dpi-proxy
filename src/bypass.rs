@@ -1,7 +1,7 @@
 // TLS record splitting is based on ByeDPI (Copyright 2024 hufrea, MIT).
 use std::io;
+use std::net::SocketAddr;
 use std::time::Duration;
-
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 use tokio::net::TcpStream;
 use tokio::time::timeout;
@@ -103,15 +103,38 @@ async fn send_split(
     let trailing = data
         .get(end..)
         .ok_or_else(|| io::Error::other("invalid TLS record"))?;
-    upstream.write_all(prefix).await?;
-    upstream.write_all(&first_len.to_be_bytes()).await?;
-    upstream.write_all(first).await?;
-    upstream.write_all(prefix).await?;
-    upstream.write_all(&second_len.to_be_bytes()).await?;
-    upstream.write_all(second).await?;
-    upstream.write_all(trailing).await
+    let mut rec1 = Vec::with_capacity(5usize.saturating_add(first.len()));
+    rec1.extend_from_slice(prefix);
+    rec1.extend_from_slice(&first_len.to_be_bytes());
+    rec1.extend_from_slice(first);
+    upstream.write_all(&rec1).await?;
+
+    let capacity = 5usize
+        .saturating_add(second.len())
+        .saturating_add(trailing.len());
+    let mut rec2 = Vec::with_capacity(capacity);
+    rec2.extend_from_slice(prefix);
+    rec2.extend_from_slice(&second_len.to_be_bytes());
+    rec2.extend_from_slice(second);
+    rec2.extend_from_slice(trailing);
+    upstream.write_all(&rec2).await
 }
 
+pub(crate) async fn connect(target: &str) -> io::Result<TcpStream> {
+    let mut addrs: Vec<SocketAddr> = tokio::net::lookup_host(target).await?.collect();
+    addrs.sort_by_key(|addr| !addr.is_ipv4());
+    let mut last_err = None;
+    for addr in addrs {
+        match TcpStream::connect(addr).await {
+            Ok(stream) => {
+                let _ = stream.set_nodelay(true);
+                return Ok(stream);
+            }
+            Err(error) => last_err = Some(error),
+        }
+    }
+    Err(last_err.unwrap_or_else(|| io::Error::new(io::ErrorKind::NotFound, "no addresses found")))
+}
 async fn copy<C: AsyncRead + AsyncWrite + Unpin>(
     client: &mut C,
     upstream: &mut TcpStream,
@@ -193,7 +216,7 @@ pub(crate) async fn relay_connected<C: AsyncRead + AsyncWrite + Unpin>(
         if !can_retry || !retryable_error(&error) {
             return Err(error);
         }
-        upstream = TcpStream::connect(target).await?;
+        upstream = connect(target).await?;
         upstream.write_all(&request).await?;
         can_retry = false;
     }
@@ -239,7 +262,7 @@ pub(crate) async fn relay_connected<C: AsyncRead + AsyncWrite + Unpin>(
                 if !can_retry || !retryable_error(&error) {
                     return Err(error);
                 }
-                upstream = TcpStream::connect(target).await?;
+                upstream = connect(target).await?;
                 upstream.write_all(&request).await?;
                 can_retry = false;
             }
