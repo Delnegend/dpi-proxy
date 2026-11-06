@@ -139,7 +139,9 @@ async fn handle(mut stream: TcpStream, config: &BypassConfig) -> io::Result<()> 
                 "invalid header boundary",
             ));
         };
-        return bypass::relay_connected(stream, &target, initial, config, upstream).await;
+        return bypass::relay_connected(stream, &target, initial, config, upstream)
+            .await
+            .map_err(|e| io::Error::new(e.kind(), format!("{target}: {e}")));
     }
 
     let (target, path, host) = match forward_target(&request) {
@@ -159,7 +161,9 @@ async fn handle(mut stream: TcpStream, config: &BypassConfig) -> io::Result<()> 
         stream.write_all(b"HTTP/1.1 100 Continue\r\n\r\n").await?;
     }
     let client = RequestStream::new(stream, buffered.split_off(header_end), request.body);
-    bypass::relay_connected(client, &target, &initial, config, upstream).await
+    bypass::relay_connected(client, &target, &initial, config, upstream)
+        .await
+        .map_err(|e| io::Error::new(e.kind(), format!("{target}: {e}")))
 }
 
 fn find_end(bytes: &[u8]) -> Option<usize> {
