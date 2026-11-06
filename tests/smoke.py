@@ -122,7 +122,7 @@ try:
     assert b1.endswith(b'e') and b2.startswith(b'xample.com'), (b1[-20:], b2[:20])
     print(f'HTTPS CONNECT ClientHello split passed ({len(b1)} + {len(b2)} bytes)')
 
-    # A reset or timeout before the first reply retries without splitting.
+    # A reset or timeout before the first reply retries with splitting.
     for failure in ('reset', 'timeout'):
         retry_target, retry_port = listen()
         retry_connections = []
@@ -158,8 +158,9 @@ try:
                 assert time.monotonic() - started < 2.5, 'dotenv timeout was not used'
         retry_thread.join(10)
         assert len(retry_connections) == 2 and not retry_thread.is_alive()
-        assert int.from_bytes(retry_connections[1][3:5], 'big') > int.from_bytes(retry_connections[0][3:5], 'big')
-        print(f'{failure} triggers one retry without splitting')
+        assert retry_connections[1][0] == 22 and retry_connections[0][0] == 22
+        assert retry_connections[1][3:5] == retry_connections[0][3:5]
+        print(f'{failure} triggers one retry with splitting')
 finally:
     proc.terminate()
     try:

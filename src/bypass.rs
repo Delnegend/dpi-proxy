@@ -217,7 +217,7 @@ pub(crate) async fn relay_connected<C: AsyncRead + AsyncWrite + Unpin>(
             return Err(error);
         }
         upstream = connect(target).await?;
-        upstream.write_all(&request).await?;
+        send_split(&mut upstream, &request, split, end).await?;
         can_retry = false;
     }
     let mut client_closed = false;
@@ -263,7 +263,7 @@ pub(crate) async fn relay_connected<C: AsyncRead + AsyncWrite + Unpin>(
                     return Err(error);
                 }
                 upstream = connect(target).await?;
-                upstream.write_all(&request).await?;
+                send_split(&mut upstream, &request, split, end).await?;
                 can_retry = false;
             }
             (false, Ok(0)) => {
