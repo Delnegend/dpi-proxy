@@ -374,7 +374,7 @@ fn forward_headers(req: &Request, path: &str, host: &str) -> Result<Vec<u8>, Htt
             }
         }
     }
-    let mut out = format!("{} {} HTTP/1.1\r\nHost: {}\r\n", req.method, path, host).into_bytes();
+    let mut out = format!("{} {} HTTP/1.1\r\nhoSt: {}\r\n", req.method, path, host).into_bytes();
     for (name, value) in &req.headers {
         if !hop.contains(name) {
             out.extend_from_slice(name.as_bytes());

@@ -32,6 +32,7 @@ def origin_http(listener, expected):
             conn.settimeout(10)
             headers = recv_header(conn)
             assert headers.startswith(expected[0]), headers
+            assert b'\r\nhoSt: ' in headers, headers
             body = recv_exact(conn, len(expected[1]))
             assert body == expected[1], (len(body), len(expected[1]))
             conn.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nOK')
