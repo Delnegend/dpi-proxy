@@ -29,7 +29,7 @@ fn setting<T: FromStr>(env: &EnvMap, name: &str, default: &str) -> Result<T, io:
 
 fn load_config() -> Result<Options, Box<dyn Error>> {
     let env = EnvLoader::new().required(false).load()?;
-    let seconds: f64 = setting(&env, "DPI_PROXY_TIMEOUT_SECS", "3")?;
+    let seconds: f64 = setting(&env, "DPI_PROXY_TIMEOUT_SECS", "6")?;
     let timeout = Duration::try_from_secs_f64(seconds).map_err(|_| {
         io::Error::new(
             io::ErrorKind::InvalidInput,

@@ -18,7 +18,7 @@ The request path depends on whether the application sends HTTP or opens a tunnel
 - **Connector:** resolves upstream addresses and attempts IPv4 addresses before IPv6 so dual-stack destinations avoid broken or inspected IPv6 routes.
 - **HTTP proxy:** validates requests, connects to their destination, and forwards one ordinary HTTP request per connection using mixed-case `hoSt` headers to pass deep packet inspection on port 80.
 - **TLS splitter:** splits an eligible ClientHello after the first byte of its server name; otherwise it forwards the stream unchanged.
-- **Retry:** can reconnect once without splitting if the initial TLS exchange fails before replay becomes unsafe.
+- **Retry:** can reconnect once preserving the split if the initial TLS exchange fails before replay becomes unsafe.
 ## Invariants
 
 - Ordinary HTTP requests are never replayed, avoiding duplicate uploads or purchases.
