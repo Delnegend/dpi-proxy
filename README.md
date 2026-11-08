@@ -2,7 +2,7 @@
 
 # dpi-proxy
 
-**An HTTP proxy for Linux x86-64 that helps applications reach services blocked by network traffic inspection.**
+**An HTTP proxy for Linux and Windows that helps applications reach services blocked by network traffic inspection.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/dpi-proxy/ci.yml?branch=main)](https://github.com/Delnegend/dpi-proxy/actions) [![Release](https://img.shields.io/github/v/release/Delnegend/dpi-proxy)](https://github.com/Delnegend/dpi-proxy/releases) [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
 
@@ -12,7 +12,9 @@
 
 ## Quick start
 
-On Linux x86-64 with [Homebrew](https://brew.sh/) and a systemd user session:
+### Linux
+
+With [Homebrew](https://brew.sh/):
 
 ```bash
 brew install Delnegend/tap/dpi-proxy
@@ -22,15 +24,15 @@ brew services start dpi-proxy
 curl --noproxy '' --proxy http://127.0.0.1:18118 https://store.steampowered.com/ -o /dev/null -w '%{http_code}\n'
 ```
 
-The service starts at login and listens only on this machine. Set your application's HTTP and HTTPS proxy to `http://127.0.0.1:18118`. Check or stop it with:
+### Windows
 
-```bash
-brew services info dpi-proxy
-brew services stop dpi-proxy
-```
+1. Download and install the latest MSI package from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). The installer automatically registers and starts the `DpiProxy` background service.
+2. In Windows Search, type **Proxy settings**, select **Set up script** under Automatic proxy setup, and enter:
+   ```text
+   https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac
+   ```
 
 The default port is `18118`.
-
 ## Highlights
 
 - Connect applications using ordinary HTTP proxy requests or HTTPS tunnels.
