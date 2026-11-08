@@ -48,6 +48,16 @@ resolve_or_install_brew() {
         fi
     fi
 
+    # Ensure brew is available in future interactive shells
+    local shellenv_cmd="eval \"\$($brew_bin shellenv)\""
+    if [ -f "$HOME/.bashrc" ] && ! grep -q "shellenv" "$HOME/.bashrc"; then
+        echo "" >> "$HOME/.bashrc"
+        echo "$shellenv_cmd" >> "$HOME/.bashrc"
+    elif [ -f "$HOME/.zshrc" ] && ! grep -q "shellenv" "$HOME/.zshrc"; then
+        echo "" >> "$HOME/.zshrc"
+        echo "$shellenv_cmd" >> "$HOME/.zshrc"
+    fi
+
     eval "$("$brew_bin" shellenv)"
     BREW_CMD="$brew_bin"
 }
@@ -155,6 +165,46 @@ configure_gnome() {
     echo "GNOME configured with steam.pac."
 }
 
+configure_steam_desktop() {
+    local action="${1:-enable}"
+    local proxy_env="env http_proxy=http://127.0.0.1:$PORT https_proxy=http://127.0.0.1:$PORT no_proxy=localhost,127.0.0.1,steamloopback.host"
+    local app_dir="$HOME/.local/share/applications"
+    local sys_apps=("/usr/share/applications/steam.desktop" "/usr/share/applications/bazzite-steam-bpm.desktop")
+
+    mkdir -p "$app_dir"
+
+    for sys_file in "${sys_apps[@]}"; do
+        local filename
+        filename="$(basename "$sys_file")"
+        local user_file="$app_dir/$filename"
+
+        if [[ "$action" == "disable" ]]; then
+            if [ -f "$user_file" ] && grep -q "127.0.0.1:$PORT" "$user_file"; then
+                sed -i 's|^Exec=env http_proxy=[^ ]* https_proxy=[^ ]* no_proxy=[^ ]* |Exec=|' "$user_file"
+                echo "Removed proxy override from $filename."
+            fi
+            continue
+        fi
+
+        [ -f "$sys_file" ] || continue
+
+        if [ ! -f "$user_file" ]; then
+            cp "$sys_file" "$user_file"
+        fi
+
+        if ! grep -q "127.0.0.1:$PORT" "$user_file"; then
+            sed -i "s|^Exec=\(env http_proxy=[^ ]* \)*|Exec=$proxy_env |" "$user_file"
+            echo "Configured Steam launcher override in $filename."
+        else
+            echo "Steam launcher $filename is already configured."
+        fi
+    done
+
+    if command -v update-desktop-database >/dev/null 2>&1; then
+        update-desktop-database "$app_dir" >/dev/null 2>&1 || true
+    fi
+}
+
 main() {
     local action="enable"
     if [[ "${1:-}" == "--disable" || "${1:-}" == "--undo" || "${1:-}" == "disable" ]]; then
@@ -167,6 +217,7 @@ main() {
         elif [[ $? -eq 1 ]]; then
             configure_gnome "disable"
         fi
+        configure_steam_desktop "disable"
         exit 0
     fi
 
@@ -185,6 +236,9 @@ main() {
         echo "See docs/configuration.md to configure your desktop or app manually."
         exit 0
     fi
+
+    echo "==> Configuring Steam launcher..."
+    configure_steam_desktop "enable"
 
     echo "==> All done! Steam is ready to use."
 }
