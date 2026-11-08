@@ -12,8 +12,13 @@
 
 ## Quick start
 
-- **Windows:** Download and run the `.msi` installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). **That's it!** The installer automatically starts the background service and configures your proxy settings.
-- **Linux:** Run the automated setup script (installs Homebrew if missing, starts the service, and configures your desktop proxy):
+### Windows
+
+Download and run the `.msi` installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). **That's it!** The installer automatically starts the background service and configures your proxy settings.
+
+### Linux
+
+Run the automated setup script (installs Homebrew if missing, starts the service, and configures your desktop proxy):
   ```bash
   curl -fsSL https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/install.sh | bash
   ```
