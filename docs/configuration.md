@@ -24,79 +24,90 @@ podman run --rm -p 127.0.0.1:1080:1080 \
 
 The proxy does not authenticate clients or encrypt the client-to-proxy connection. Publish it only to a trusted interface and restrict network access. It handles one ordinary HTTP request per connection and closes it after the response; HTTPS `CONNECT` remains a byte stream.
 
-## Desktop environment proxy setup
+## Client setup for Steam
 
-To route only Steam traffic through `dpi-proxy` while letting other applications connect directly, configure your desktop environment's proxy settings.
+Choose one of the two options below to route Steam traffic through `dpi-proxy` while keeping other applications direct.
 
-### KDE Plasma
+### Option 1: Automatic Proxy Configuration (PAC file)
 
-KDE Plasma stores proxy settings in `~/.config/kioslaverc`. Setting `ReversedException=true` inverts the bypass list so that the proxy is used **only** for matching domains.
+A PAC script selectively directs Steam requests to `dpi-proxy` and sends everything else `DIRECT`. The script is provided in [`steam.pac`](../steam.pac).
 
-```ini
-[Proxy Settings]
-ProxyType=1
-httpProxy=http://127.0.0.1 18118
-httpsProxy=http://127.0.0.1 18118
-ReversedException=true
-NoProxyFor=steampowered.com,*.steampowered.com,steamcommunity.com,*.steamcommunity.com,steamgames.com,*.steamgames.com,steamusercontent.com,*.steamusercontent.com,steamcontent.com,*.steamcontent.com,steamstatic.com,*.steamstatic.com,steamserver.net,*.steamserver.net,steam-chat.com,*.steam-chat.com,akamaihd.net,*.akamaihd.net,akamaized.net,*.akamaized.net,valvesoftware.com,*.valvesoftware.com,valve.net,*.valve.net,dota2.com,*.dota2.com,steamdeck.com,*.steamdeck.com,s.team,*.s.team,steam.tv,*.steam.tv
+#### GNOME
+- **GUI:** Open **Settings** → **Network** → **Network Proxy** → select **Automatic** → enter Script URL: `file:///path/to/steam.pac` (or the raw GitHub URL).
+- **CLI:**
+  ```bash
+  gsettings set org.gnome.system.proxy mode 'auto'
+  gsettings set org.gnome.system.proxy autoconfig-url 'file:///path/to/steam.pac'
+  ```
+
+#### KDE Plasma
+- **GUI:** Open **System Settings** → **Network** → **Proxy** → choose **Use proxy configuration script** → enter Script URL: `file:///path/to/steam.pac`.
+- **CLI:**
+  ```bash
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "ProxyType" 2
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "Proxy Config Script" "file:///path/to/steam.pac"
+  qdbus org.kde.kded6 /kded org.kde.kded6.reconfigure
+  ```
+
+#### Windows
+- **GUI:** Open **Settings** → **Network & internet** → **Proxy** → under **Automatic proxy setup**, turn on **Use setup script** → enter Script address: `file://C:/path/to/steam.pac` (or the raw GitHub URL) → click **Save**.
+- **CLI (PowerShell):**
+  ```powershell
+  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name AutoConfigURL -Value 'file://C:/path/to/steam.pac'
+  ```
+
+---
+
+### Option 2: Manual proxy configuration with domain whitelist
+
+Manually configure the proxy address (`127.0.0.1:18118`) and whitelist Steam domains.
+
+#### Steam domains whitelist
+
+```text
+steampowered.com,*.steampowered.com,steamcommunity.com,*.steamcommunity.com,steamgames.com,*.steamgames.com,steamusercontent.com,*.steamusercontent.com,steamcontent.com,*.steamcontent.com,steamstatic.com,*.steamstatic.com,steamserver.net,*.steamserver.net,steam-chat.com,*.steam-chat.com,akamaihd.net,*.akamaihd.net,akamaized.net,*.akamaized.net,valvesoftware.com,*.valvesoftware.com,valve.net,*.valve.net,dota2.com,*.dota2.com,steamdeck.com,*.steamdeck.com,s.team,*.s.team,steam.tv,*.steam.tv
 ```
 
 > **Important:** Chromium and Steam's web helper require both the apex domain and its wildcard (e.g. `steamcommunity.com,*.steamcommunity.com`). A bare `*.domain.com` wildcard matches subdomains only; requests to the root domain would bypass the proxy and get reset by your ISP.
 
-Apply changes without logging out:
+#### KDE Plasma
 
-```bash
-qdbus org.kde.kded6 /kded org.kde.kded6.reconfigure
-```
+KDE Plasma supports inverted bypass (`ReversedException=true`) to proxy **only** matching domains:
+- **GUI:** Open **System Settings** → **Network** → **Proxy** → select **Manually specify proxy configuration** → set HTTP/HTTPS to `127.0.0.1` port `18118` → paste the domain whitelist into **Exceptions** → check **Use proxy only for entries in exception list**.
+- **CLI:**
+  ```bash
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "ProxyType" 1
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "httpProxy" "http://127.0.0.1 18118"
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "httpsProxy" "http://127.0.0.1 18118"
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "ReversedException" "true"
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "NoProxyFor" "steampowered.com,*.steampowered.com,steamcommunity.com,*.steamcommunity.com,steamgames.com,*.steamgames.com,steamusercontent.com,*.steamusercontent.com,steamcontent.com,*.steamcontent.com,steamstatic.com,*.steamstatic.com,steamserver.net,*.steamserver.net,steam-chat.com,*.steam-chat.com,akamaihd.net,*.akamaihd.net,akamaized.net,*.akamaized.net,valvesoftware.com,*.valvesoftware.com,valve.net,*.valve.net,dota2.com,*.dota2.com,steamdeck.com,*.steamdeck.com,s.team,*.s.team,steam.tv,*.steam.tv"
+  qdbus org.kde.kded6 /kded org.kde.kded6.reconfigure
+  ```
 
-### GNOME
+#### GNOME & Windows
 
-GNOME's manual proxy mode routes all traffic by default and uses `ignore-hosts` for direct bypass. To selectively proxy only Steam domains, use a Proxy Auto-Configuration (PAC) file or set system-wide manual proxy:
+GNOME and Windows manual proxy modes bypass matching domains rather than proxying only them. For selective routing, **Option 1 (PAC file)** is recommended. To proxy all system traffic manually:
+- **GNOME GUI:** **Settings** → **Network** → **Network Proxy** → **Manual** → set host `127.0.0.1`, port `18118`.
+- **GNOME CLI:**
+  ```bash
+  gsettings set org.gnome.system.proxy mode 'manual'
+  gsettings set org.gnome.system.proxy.http host '127.0.0.1'
+  gsettings set org.gnome.system.proxy.http port 18118
+  gsettings set org.gnome.system.proxy.https host '127.0.0.1'
+  gsettings set org.gnome.system.proxy.https port 18118
+  ```
+- **Windows GUI:** **Settings** → **Network & internet** → **Proxy** → **Manual proxy setup** → set IP `127.0.0.1`, port `18118`.
+- **Windows CLI (PowerShell):**
+  ```powershell
+  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name ProxyEnable -Value 1
+  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name ProxyServer -Value '127.0.0.1:18118'
+  ```
 
-```bash
-gsettings set org.gnome.system.proxy mode 'manual'
-gsettings set org.gnome.system.proxy.http host '127.0.0.1'
-gsettings set org.gnome.system.proxy.http port 18118
-gsettings set org.gnome.system.proxy.https host '127.0.0.1'
-gsettings set org.gnome.system.proxy.https port 18118
-```
+---
 
-For selective routing, serve or reference a local PAC file:
+### Steam game downloads launcher
 
-```javascript
-function FindProxyForURL(url, host) {
-    if (dnsDomainIs(host, "steampowered.com") ||
-        dnsDomainIs(host, "steamcommunity.com") ||
-        dnsDomainIs(host, "steamgames.com") ||
-        dnsDomainIs(host, "steamusercontent.com") ||
-        dnsDomainIs(host, "steamcontent.com") ||
-        dnsDomainIs(host, "steamstatic.com") ||
-        dnsDomainIs(host, "steamserver.net") ||
-        dnsDomainIs(host, "steam-chat.com") ||
-        dnsDomainIs(host, "akamaihd.net") ||
-        dnsDomainIs(host, "akamaized.net") ||
-        dnsDomainIs(host, "valvesoftware.com") ||
-        dnsDomainIs(host, "valve.net") ||
-        dnsDomainIs(host, "dota2.com") ||
-        dnsDomainIs(host, "steamdeck.com") ||
-        dnsDomainIs(host, "s.team") ||
-        dnsDomainIs(host, "steam.tv")) {
-        return "PROXY 127.0.0.1:18118; DIRECT";
-    }
-    return "DIRECT";
-}
-```
-
-Point GNOME to the file:
-
-```bash
-gsettings set org.gnome.system.proxy mode 'auto'
-gsettings set org.gnome.system.proxy autoconfig-url 'file:///path/to/proxy.pac'
-```
-
-### Steam client downloads
-
-Steam's UI and store pages (`steamwebhelper`) use your desktop environment's proxy configuration automatically. However, the background game downloader uses standard environment variables. Launch Steam with:
+Steam's web helper (`steamwebhelper`) uses the desktop environment's proxy automatically. For background game chunk and manifest downloads, launch Steam with proxy environment variables:
 
 ```bash
 env http_proxy=http://127.0.0.1:18118 https_proxy=http://127.0.0.1:18118 no_proxy=localhost,127.0.0.1,steamloopback.host steam
