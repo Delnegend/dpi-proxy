@@ -30,30 +30,32 @@ Choose one of the two options below to route Steam traffic through `dpi-proxy` w
 
 ### Option 1: Automatic Proxy Configuration (PAC file)
 
-A PAC script selectively directs Steam requests to `dpi-proxy` and sends everything else `DIRECT`. The script is provided in [`steam.pac`](../steam.pac).
+A PAC script selectively directs Steam requests to `dpi-proxy` and sends everything else `DIRECT`. Use the raw script URL directly or download [`steam.pac`](../steam.pac):
+
+`https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac`
 
 #### GNOME
-- **GUI:** Open **Settings** → **Network** → **Network Proxy** → select **Automatic** → enter Script URL: `file:///path/to/steam.pac` (or the raw GitHub URL).
+- **GUI:** Open **Settings** → **Network** → **Network Proxy** → select **Automatic** → enter Configuration URL: `https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac`.
 - **CLI:**
   ```bash
   gsettings set org.gnome.system.proxy mode 'auto'
-  gsettings set org.gnome.system.proxy autoconfig-url 'file:///path/to/steam.pac'
+  gsettings set org.gnome.system.proxy autoconfig-url 'https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac'
   ```
 
 #### KDE Plasma
-- **GUI:** Open **System Settings** → **Network** → **Proxy** → choose **Use proxy configuration script** → enter Script URL: `file:///path/to/steam.pac`.
+- **GUI:** Open **System Settings** → **Network** → **Proxy** → choose **Use proxy configuration script** → enter Script URL: `https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac`.
 - **CLI:**
   ```bash
   kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "ProxyType" 2
-  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "Proxy Config Script" "file:///path/to/steam.pac"
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "Proxy Config Script" "https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac"
   qdbus org.kde.kded6 /kded org.kde.kded6.reconfigure
   ```
 
 #### Windows
-- **GUI:** Open **Settings** → **Network & internet** → **Proxy** → under **Automatic proxy setup**, turn on **Use setup script** → enter Script address: `file://C:/path/to/steam.pac` (or the raw GitHub URL) → click **Save**.
+- **GUI:** Open **Settings** → **Network & internet** → **Proxy** → under **Automatic proxy setup**, turn on **Use setup script** → enter Script address: `https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac` → click **Save**.
 - **CLI (PowerShell):**
   ```powershell
-  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name AutoConfigURL -Value 'file://C:/path/to/steam.pac'
+  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name AutoConfigURL -Value 'https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac'
   ```
 
 ---
