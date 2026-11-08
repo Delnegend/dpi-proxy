@@ -1,0 +1,50 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <!-- Source paths are resolved relative to the wix build working directory (repo root). -->
+  <?define BinaryPath = "target/x86_64-pc-windows-msvc/release/dpi-proxy.exe" ?>
+  <Package Name="DPI Proxy"
+           Manufacturer="Delnegend"
+           Version="$(var.Version)"
+           UpgradeCode="{40C5DACD-853D-4F38-91F7-476B4D2C3B44}"
+           Language="1033">
+    <SummaryInformation Description="HTTP proxy with ByeDPI-compatible traffic desynchronization." />
+    <MajorUpgrade AllowSameVersionUpgrades="yes" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="DPI Proxy" />
+    </StandardDirectory>
+
+    <Feature Id="MainFeature" Title="DPI Proxy" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <Component Id="DpiProxyComponent" Guid="{F1DE5DBA-95E0-4A88-ACCC-E232CDB640F0}">
+        <File Id="DpiProxyExe"
+              Source="$(var.BinaryPath)" />
+        <File Id="SteamPac"
+              Source="steam.pac" />
+        <File Id="LicenseMit"
+              Source="LICENSE-MIT" />
+        <File Id="LicenseApache"
+              Source="LICENSE-APACHE" />
+      </Component>
+      <Component Id="PathEnvironmentVariable" Guid="{398E9DAA-44AE-4BD9-B25F-9CD7BB3F2DF4}">
+        <Environment Id="DpiProxyPath"
+                     Action="set"
+                     Part="last"
+                     Name="PATH"
+                     System="yes"
+                     Value="[INSTALLFOLDER]" />
+        <RegistryValue Root="HKLM"
+                       Key="Software\Delnegend\DpiProxy"
+                       Name="InstallPath"
+                       Type="string"
+                       Value="[INSTALLFOLDER]"
+                       KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

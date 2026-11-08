@@ -50,6 +50,22 @@ fn load_config() -> Result<Options, Box<dyn Error>> {
     })
 }
 
+#[cfg(unix)]
+async fn shutdown_signal() -> io::Result<()> {
+    let mut terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
+    let mut interrupt = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())?;
+    tokio::select! {
+        _ = terminate.recv() => Ok(()),
+        _ = interrupt.recv() => Ok(()),
+    }
+}
+
+#[cfg(not(unix))]
+async fn shutdown_signal() -> io::Result<()> {
+    tokio::signal::ctrl_c().await?;
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     if std::env::args_os().nth(1).is_some() {
@@ -60,14 +76,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .into());
     }
     let options = load_config()?;
-    let mut terminate = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())?;
-    let mut interrupt = tokio::signal::unix::signal(tokio::signal::unix::SignalKind::interrupt())?;
     let listener = TcpListener::bind((options.address.as_str(), options.port)).await?;
     eprintln!("dpi-proxy listening on {}", listener.local_addr()?);
     tokio::select! {
         result = proxy::serve(listener, Arc::new(options.bypass)) => result?,
-        _ = terminate.recv() => {}
-        _ = interrupt.recv() => {}
+        result = shutdown_signal() => result?,
     }
     Ok(())
 }
