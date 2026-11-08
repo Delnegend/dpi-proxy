@@ -33,7 +33,11 @@ resolve_or_install_brew() {
             fi
         fi
 
-        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" < /dev/null
+        local brew_installer
+        brew_installer="$(mktemp -t brew-install.XXXXXX.sh)"
+        curl -fsSL "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh" -o "$brew_installer"
+        NONINTERACTIVE=1 /bin/bash "$brew_installer" < /dev/null
+        rm -f "$brew_installer"
 
         for c in /home/linuxbrew/.linuxbrew/bin/brew /var/home/linuxbrew/.linuxbrew/bin/brew; do
             if [ -x "$c" ]; then brew_bin="$c"; break; fi
@@ -75,8 +79,7 @@ detect_desktop() {
     local current="${XDG_CURRENT_DESKTOP:-}"
     local session="${DESKTOP_SESSION:-}"
 
-    local IFS=":"
-    read -ra desktops <<< "$current"
+    IFS=":" read -ra desktops <<< "$current"
     for d in "${desktops[@]}"; do
         case "${d^^}" in
             KDE) return 0 ;;
