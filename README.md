@@ -12,27 +12,24 @@
 
 ## Quick start
 
-### Linux
+### 1. Installation
 
-With [Homebrew](https://brew.sh/):
+- **Linux:** Install and start the service with [Homebrew](https://brew.sh/):
+  ```bash
+  brew install Delnegend/tap/dpi-proxy
+  brew services start dpi-proxy
+  ```
+- **Windows:** Download and run the installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). It automatically registers and starts the `DpiProxy` background service.
+
+The proxy listens on `127.0.0.1:18118`. Verify it answers:
 
 ```bash
-brew install Delnegend/tap/dpi-proxy
-brew services start dpi-proxy
-
-# Check the proxy can reach the Steam Store.
 curl --noproxy '' --proxy http://127.0.0.1:18118 https://store.steampowered.com/ -o /dev/null -w '%{http_code}\n'
 ```
 
-### Windows
+### 2. Configuration
 
-1. Download and install the latest MSI package from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). The installer automatically registers and starts the `DpiProxy` background service.
-2. In Windows Search, type **Proxy settings**, select **Set up script** under Automatic proxy setup, and enter:
-   ```text
-   https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/steam.pac
-   ```
-
-The default port is `18118`.
+Configure your system or Steam client to route blocked traffic through the proxy. For step-by-step instructions via the automatic PAC script or manual domain whitelist on Windows, KDE Plasma, and GNOME, see [Configuration](docs/configuration.md).
 ## Highlights
 
 - Connect applications using ordinary HTTP proxy requests or HTTPS tunnels.
