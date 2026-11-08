@@ -2,7 +2,7 @@
 
 # dpi-proxy
 
-**An HTTP proxy for Linux and Windows that helps applications reach services blocked by network traffic inspection.**
+**An HTTP proxy for Linux and Windows that helps Steam and other applications bypass network traffic inspection.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/dpi-proxy/ci.yml?branch=main)](https://github.com/Delnegend/dpi-proxy/actions) [![Release](https://img.shields.io/github/v/release/Delnegend/dpi-proxy)](https://github.com/Delnegend/dpi-proxy/releases) [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
 
@@ -12,24 +12,27 @@
 
 ## Quick start
 
-### 1. Installation
-
-- **Linux:** Install and start the service with [Homebrew](https://brew.sh/):
+- **Windows:** Download and run the `.msi` installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). **That's it!** The installer automatically starts the background service and configures your proxy settings.
+- **Linux:** Run the automated setup script (installs Homebrew if missing, starts the service, and configures your desktop proxy):
   ```bash
-  brew install Delnegend/tap/dpi-proxy
-  brew services start dpi-proxy
+  curl -fsSL https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/install.sh | bash
   ```
-- **Windows:** Download and run the installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). It automatically registers and starts the `DpiProxy` background service.
 
-The proxy listens on `127.0.0.1:18118`. Verify it answers:
+**Verification:** Open Steam and click **Store** or **Community**: pages will load on the first try without connection errors.
+
+## Manual & Advanced options (Optional)
+
+**No further setup is needed if you follow the automated installation steps above.**
+
+If you prefer manual installation via Homebrew on Linux:
 
 ```bash
-curl --noproxy '' --proxy http://127.0.0.1:18118 https://store.steampowered.com/ -o /dev/null -w '%{http_code}\n'
+brew install Delnegend/tap/dpi-proxy
+brew services start dpi-proxy
 ```
 
-### 2. Configuration
+For manual desktop proxy settings, custom domain whitelists, or container setups, see [Configuration](docs/configuration.md).
 
-Configure your system or Steam client to route blocked traffic through the proxy. For step-by-step instructions via the automatic PAC script or manual domain whitelist on Windows, KDE Plasma, and GNOME, see [Configuration](docs/configuration.md).
 ## Highlights
 
 - Connect applications using ordinary HTTP proxy requests or HTTPS tunnels.

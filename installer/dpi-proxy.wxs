@@ -26,7 +26,7 @@
               Source="$(var.BinaryPath)"
               KeyPath="yes" />
         <File Id="SteamPac"
-              Source="steam.pac" />
+              Source="scripts\steam.pac" />
         <File Id="LicenseMit"
               Source="LICENSE-MIT" />
         <File Id="LicenseApache"
@@ -58,6 +58,14 @@
                        Name="InstallPath"
                        Type="string"
                        Value="[INSTALLFOLDER]"
+                       KeyPath="yes" />
+      </Component>
+      <Component Id="PacAutoConfigRegistry" Guid="{0AF0355C-DE4F-4176-B408-D22125BB6F18}">
+        <RegistryValue Root="HKCU"
+                       Key="Software\Microsoft\Windows\CurrentVersion\Internet Settings"
+                       Name="AutoConfigURL"
+                       Type="string"
+                       Value="https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/steam.pac"
                        KeyPath="yes" />
       </Component>
     </ComponentGroup>
