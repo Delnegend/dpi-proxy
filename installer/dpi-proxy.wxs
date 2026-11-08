@@ -23,13 +23,28 @@
     <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
       <Component Id="DpiProxyComponent" Guid="{F1DE5DBA-95E0-4A88-ACCC-E232CDB640F0}">
         <File Id="DpiProxyExe"
-              Source="$(var.BinaryPath)" />
+              Source="$(var.BinaryPath)"
+              KeyPath="yes" />
         <File Id="SteamPac"
               Source="steam.pac" />
         <File Id="LicenseMit"
               Source="LICENSE-MIT" />
         <File Id="LicenseApache"
               Source="LICENSE-APACHE" />
+        <ServiceInstall Id="DpiProxyServiceInstaller"
+                        Type="ownProcess"
+                        Name="DpiProxy"
+                        DisplayName="DPI Proxy"
+                        Description="HTTP proxy with ByeDPI-compatible traffic desynchronization."
+                        Start="auto"
+                        Account="LocalSystem"
+                        ErrorControl="normal" />
+        <ServiceControl Id="DpiProxyServiceControl"
+                        Name="DpiProxy"
+                        Start="install"
+                        Stop="both"
+                        Remove="uninstall"
+                        Wait="yes" />
       </Component>
       <Component Id="PathEnvironmentVariable" Guid="{398E9DAA-44AE-4BD9-B25F-9CD7BB3F2DF4}">
         <Environment Id="DpiProxyPath"

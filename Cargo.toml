@@ -12,6 +12,12 @@ http = "1.5.0"
 httparse = "1.10.1"
 tokio = { version = "1.54.1", features = ["io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
 
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_System_Services",
+] }
 [lints.rust]
 unreachable_pub = "warn"
 

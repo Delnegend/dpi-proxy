@@ -1,5 +1,7 @@
 mod bypass;
 mod proxy;
+#[cfg(windows)]
+mod windows_service;
 
 use std::error::Error;
 use std::io;
@@ -66,8 +68,7 @@ async fn shutdown_signal() -> io::Result<()> {
     Ok(())
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn Error>> {
     if std::env::args_os().nth(1).is_some() {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
@@ -75,12 +76,27 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .into());
     }
-    let options = load_config()?;
-    let listener = TcpListener::bind((options.address.as_str(), options.port)).await?;
-    eprintln!("dpi-proxy listening on {}", listener.local_addr()?);
-    tokio::select! {
-        result = proxy::serve(listener, Arc::new(options.bypass)) => result?,
-        result = shutdown_signal() => result?,
+
+    #[cfg(windows)]
+    if windows_service::run()? {
+        return Ok(());
     }
-    Ok(())
+
+    run_console()
+}
+
+fn run_console() -> Result<(), Box<dyn Error>> {
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()?;
+    rt.block_on(async {
+        let options = load_config()?;
+        let listener = TcpListener::bind((options.address.as_str(), options.port)).await?;
+        eprintln!("dpi-proxy listening on {}", listener.local_addr()?);
+        tokio::select! {
+            result = proxy::serve(listener, Arc::new(options.bypass)) => result?,
+            result = shutdown_signal() => result?,
+        }
+        Ok(())
+    })
 }
