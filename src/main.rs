@@ -41,7 +41,7 @@ fn load_config() -> Result<Options, Box<dyn Error>> {
             .get("DPI_PROXY_HOST")
             .cloned()
             .unwrap_or_else(|| String::from("127.0.0.1")),
-        port: setting(&env, "DPI_PROXY_PORT", "1080")?,
+        port: setting(&env, "DPI_PROXY_PORT", "18118")?,
         bypass: BypassConfig {
             split_sni: setting(&env, "DPI_PROXY_SPLIT_SNI", "true")?,
             retry_on_reset: setting(&env, "DPI_PROXY_RETRY_ON_RESET", "true")?,

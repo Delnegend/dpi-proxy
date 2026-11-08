@@ -8,5 +8,5 @@ FROM debian:trixie-slim
 COPY --from=build /src/target/release/dpi-proxy /usr/local/bin/dpi-proxy
 USER 10001:10001
 ENV DPI_PROXY_HOST=0.0.0.0
-EXPOSE 1080
+EXPOSE 18118
 ENTRYPOINT ["/usr/local/bin/dpi-proxy"]

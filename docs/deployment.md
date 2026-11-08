@@ -18,7 +18,7 @@ Start it automatically at login:
 brew services start dpi-proxy
 ```
 
-The Homebrew service listens only on `127.0.0.1:18118`; a manual `dpi-proxy` launch defaults to port `1080`.
+The service and direct executable launches both listen on `127.0.0.1:18118` by default.
 
 Check the service or read its logs:
 
@@ -39,10 +39,10 @@ To run the published container on one trusted host address, substitute the host'
 
 ```bash
 podman run -d --name dpi-proxy --restart unless-stopped \
-  -p 192.168.2.10:1080:1080 ghcr.io/delnegend/dpi-proxy:latest
+  -p 192.168.2.10:18118:18118 ghcr.io/delnegend/dpi-proxy:latest
 ```
 
-Use an unused host port if ByeDPI is already using port 1080. The proxy has no authentication; restrict access to trusted clients with a firewall. The TCP connection from a client to this proxy is not encrypted by the proxy. HTTPS destinations retain their end-to-end encryption.
+The proxy has no authentication; restrict access to trusted clients with a firewall. The TCP connection from a client to this proxy is not encrypted by the proxy. HTTPS destinations retain their end-to-end encryption.
 
 ```bash
 podman logs dpi-proxy

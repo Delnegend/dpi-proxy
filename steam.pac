@@ -22,7 +22,7 @@ function FindProxyForURL(url, host) {
     for (var i = 0; i < steamDomains.length; i++) {
         var domain = steamDomains[i];
         if (host === domain || dnsDomainIs(host, "." + domain)) {
-            // Homebrew service defaults to 18118; change to 1080 for manual/container launches
+            // dpi-proxy defaults to port 18118
             return "PROXY 127.0.0.1:18118; DIRECT";
         }
     }

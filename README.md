@@ -29,7 +29,7 @@ brew services info dpi-proxy
 brew services stop dpi-proxy
 ```
 
-Running `dpi-proxy` directly instead uses port `1080` by default.
+The default port is `18118`.
 
 ## Highlights
 
