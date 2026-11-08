@@ -25,7 +25,7 @@ checksum = "96cd2d7607be76b700f707349fe6f48970385220c7c3a59a72e4dcb5e19143ca"
 
 [[package]]
 name = "dpi-proxy"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "dotenv-ng",
  "http",
