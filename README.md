@@ -2,7 +2,7 @@
 
 # dpi-proxy
 
-**An HTTP proxy for Linux and Windows that helps Steam and other applications bypass network traffic inspection.**
+**An HTTP proxy for Linux and Windows that helps bypass ISP Deep Packet Inspection (DPI) blocking.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/dpi-proxy/ci.yml?branch=main)](https://github.com/Delnegend/dpi-proxy/actions) [![Release](https://img.shields.io/github/v/release/Delnegend/dpi-proxy)](https://github.com/Delnegend/dpi-proxy/releases) [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
 
@@ -23,7 +23,7 @@ Run the automated setup script (installs Homebrew if missing, starts the service
   curl -fsSL https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/install.sh | bash
   ```
 
-**Verification:** Open Steam and click **Store** or **Community**: pages will load on the first try without connection errors.
+**Verification:** Open any blocked website or service in your browser or application: pages will load on the first try without connection errors.
 
 ## Manual & Advanced options (Optional)
 
@@ -36,7 +36,7 @@ brew install Delnegend/tap/dpi-proxy
 brew services start dpi-proxy
 ```
 
-For manual desktop proxy settings, custom domain whitelists, or container setups, see [Configuration](docs/configuration.md).
+For manual desktop proxy settings, custom PAC rules, or container setups, see [Configuration](docs/configuration.md).
 
 ## Highlights
 

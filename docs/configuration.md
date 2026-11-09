@@ -34,16 +34,16 @@ Windows Search → **Proxy settings** → under **Manual proxy setup**, click **
   qdbus org.kde.kded6 /kded org.kde.kded6.reconfigure
   ```
 
-#### Inverted domain whitelist
-Proxy *only* Steam domains using KDE's inverted bypass:
-- **GUI:** **System Settings** → **Network** → **Proxy** → select **Manually specify proxy configuration** → set `127.0.0.1:18118` → paste the [Steam domains](#steam-domains-whitelist) into **Exceptions** → check **Use proxy only for entries in exception list**.
+#### Inverted domain allowlist (Optional)
+If you prefer to route only specific blocked domains through the proxy using KDE's inverted bypass:
+- **GUI:** **System Settings** → **Network** → **Proxy** → select **Manually specify proxy configuration** → set `127.0.0.1:18118` → paste your target domains into **Exceptions** → check **Use proxy only for entries in exception list**.
 - **CLI:**
   ```bash
   kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "ProxyType" 1
   kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "httpProxy" "http://127.0.0.1 18118"
   kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "httpsProxy" "http://127.0.0.1 18118"
   kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "ReversedException" "true"
-  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "NoProxyFor" "<domain-whitelist>"
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "NoProxyFor" "<domain-list>"
   qdbus org.kde.kded6 /kded org.kde.kded6.reconfigure
   ```
 
@@ -72,20 +72,12 @@ Proxy *only* Steam domains using KDE's inverted bypass:
 
 ---
 
-### Steam domains whitelist
+### Environment variables for CLI and background applications
 
-Both apex domains and wildcards (`domain.com,*.domain.com`) are required so root domain requests do not bypass the proxy:
-
-```text
-steampowered.com,*.steampowered.com,steamcommunity.com,*.steamcommunity.com,steamgames.com,*.steamgames.com,steamusercontent.com,*.steamusercontent.com,steamcontent.com,*.steamcontent.com,steamstatic.com,*.steamstatic.com,steamserver.net,*.steamserver.net,steam-chat.com,*.steam-chat.com,akamaihd.net,*.akamaihd.net,akamaized.net,*.akamaized.net,valvesoftware.com,*.valvesoftware.com,valve.net,*.valve.net,dota2.com,*.dota2.com,steamdeck.com,*.steamdeck.com,s.team,*.s.team,steam.tv,*.steam.tv
-```
-
-### Linux game download launcher
-
-Steam's UI and store pages (`steamwebhelper`) use desktop environment proxy settings automatically. On Linux, the background game downloader uses standard environment variables:
+Many command-line utilities, background daemons, and desktop applications honor standard proxy environment variables:
 
 ```bash
-env http_proxy=http://127.0.0.1:18118 https_proxy=http://127.0.0.1:18118 no_proxy=localhost,127.0.0.1,steamloopback.host steam
+env http_proxy=http://127.0.0.1:18118 https_proxy=http://127.0.0.1:18118 no_proxy=localhost,127.0.0.1 <command>
 ```
 
 ## DPI Proxy configuration

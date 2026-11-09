@@ -194,9 +194,9 @@ configure_steam_desktop() {
 
         if ! grep -q "127.0.0.1:$PORT" "$user_file"; then
             sed -i "s|^Exec=\(env http_proxy=[^ ]* \)*|Exec=$proxy_env |" "$user_file"
-            echo "Configured Steam launcher override in $filename."
+            echo "Configured launcher proxy override in $filename."
         else
-            echo "Steam launcher $filename is already configured."
+            echo "Launcher $filename is already configured."
         fi
     done
 
@@ -237,10 +237,10 @@ main() {
         exit 0
     fi
 
-    echo "==> Configuring Steam launcher..."
+    echo "==> Configuring application launchers..."
     configure_steam_desktop "enable"
 
-    echo "==> All done! Steam is ready to use."
+    echo "==> All done! dpi-proxy is configured and ready to use."
 }
 
 main "$@"

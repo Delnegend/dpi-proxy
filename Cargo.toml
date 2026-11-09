@@ -4,7 +4,7 @@ version = "0.7.0"
 edition = "2024"
 rust-version = "1.85"
 license = "MIT OR Apache-2.0"
-description = "Linux HTTP proxy with ByeDPI-compatible traffic desynchronization"
+description = "HTTP proxy for bypassing ISP Deep Packet Inspection (DPI) blocking"
 
 [dependencies]
 dotenv = { package = "dotenv-ng", version = "1.0.0" }

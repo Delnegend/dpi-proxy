@@ -35,7 +35,7 @@
                         Type="ownProcess"
                         Name="DpiProxy"
                         DisplayName="DPI Proxy"
-                        Description="HTTP proxy with ByeDPI-compatible traffic desynchronization."
+                        Description="HTTP proxy for bypassing ISP Deep Packet Inspection (DPI) blocking."
                         Start="auto"
                         Account="LocalSystem"
                         ErrorControl="normal" />

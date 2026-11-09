@@ -49,4 +49,4 @@ podman logs dpi-proxy
 podman stop dpi-proxy
 ```
 
-Steam's downloader can use an HTTP proxy via `http_proxy` and `https_proxy` in its launch environment. Client proxy support varies; test Steam sign-in, the Store, and a game update before retiring an existing proxy.
+Many applications can use an HTTP proxy via `http_proxy` and `https_proxy` in their launch environment. Client proxy support varies; verify application connectivity before retiring an existing proxy setup.
