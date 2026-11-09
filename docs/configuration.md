@@ -1,11 +1,11 @@
 # Configuration
 
-## Client setup for Steam
+## Client setup
 
-Route Steam traffic through `dpi-proxy` on port `18118` while keeping other applications direct.
+Configure your system to use `proxy.pac`. The script routes internet traffic through `dpi-proxy` on port `18118` while bypassing local CIDR ranges, localhost, and Tailscale directly.
 
 PAC script URL:
-`https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/steam.pac`
+`https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/proxy.pac`
 
 ### Windows
 
@@ -15,7 +15,7 @@ The MSI installer configures the PAC script automatically during installation.
 - **GUI:** In Windows Search, type **Proxy settings** and open it. Under **Automatic proxy setup**, turn on **Use setup script**, paste the PAC URL into **Script address**, and click **Save**.
 - **CLI (PowerShell):**
   ```powershell
-  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name AutoConfigURL -Value 'https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/steam.pac'
+  Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -Name AutoConfigURL -Value 'https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/proxy.pac'
   ```
 
 #### Manual system proxy
@@ -30,7 +30,7 @@ Windows Search → **Proxy settings** → under **Manual proxy setup**, click **
 - **CLI:**
   ```bash
   kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "ProxyType" 2
-  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "Proxy Config Script" "https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/steam.pac"
+  kwriteconfig6 --file kioslaverc --group "Proxy Settings" --key "Proxy Config Script" "https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/proxy.pac"
   qdbus org.kde.kded6 /kded org.kde.kded6.reconfigure
   ```
 
@@ -56,7 +56,7 @@ Proxy *only* Steam domains using KDE's inverted bypass:
 - **CLI:**
   ```bash
   gsettings set org.gnome.system.proxy mode 'auto'
-  gsettings set org.gnome.system.proxy autoconfig-url 'https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/steam.pac'
+  gsettings set org.gnome.system.proxy autoconfig-url 'https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/proxy.pac'
   ```
 
 #### Manual system proxy

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PAC_URL="https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/steam.pac"
+PAC_URL="https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/proxy.pac"
 PORT="18118"
 
 # 1. Resolve or install Homebrew
@@ -143,7 +143,7 @@ configure_kde() {
     qdbus org.kde.kded6 /kded org.kde.kded6.reconfigure 2>/dev/null || \
     qdbus org.kde.kded5 /kded org.kde.kded5.reconfigure 2>/dev/null || true
 
-    echo "KDE Plasma configured with steam.pac."
+    echo "KDE Plasma configured with proxy.pac."
 }
 
 configure_gnome() {
@@ -162,7 +162,7 @@ configure_gnome() {
     gsettings set org.gnome.system.proxy mode 'auto'
     gsettings set org.gnome.system.proxy autoconfig-url "$PAC_URL"
 
-    echo "GNOME configured with steam.pac."
+    echo "GNOME configured with proxy.pac."
 }
 
 configure_steam_desktop() {
