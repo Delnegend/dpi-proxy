@@ -4,57 +4,42 @@
 
 **An HTTP proxy for Linux and Windows that helps bypass ISP Deep Packet Inspection (DPI) blocking.**
 
-[![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/dpi-proxy/ci.yml?branch=main)](https://github.com/Delnegend/dpi-proxy/actions) [![Release](https://img.shields.io/github/v/release/Delnegend/dpi-proxy)](https://github.com/Delnegend/dpi-proxy/releases) [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](LICENSE-MIT)
+[![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/dpi-proxy/ci.yml?branch=main&style=flat-square)](https://github.com/Delnegend/dpi-proxy/actions)
+[![Release](https://img.shields.io/github/v/release/Delnegend/dpi-proxy?style=flat-square)](https://github.com/Delnegend/dpi-proxy/releases)
+[![License](https://img.shields.io/badge/license-MIT%20%7C%20Apache--2.0-blue?style=flat-square)](LICENSE-MIT)
 
 </div>
 
 ---
 
-## Quick start
+## Quick Start
 
 ### Windows
 
-Download and run the `.msi` installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). **That's it!** The installer automatically starts the background service and configures your proxy settings.
+Download and run the `.msi` installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). The installer automatically starts the background service and configures your proxy settings.
 
 ### Linux
 
 Run the automated setup script (installs Homebrew if missing, starts the service, and configures your desktop proxy):
-  ```bash
-  curl -fsSL https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/install.sh | bash
-  ```
-
-**Verification:** Open any blocked website or service in your browser or application: pages will load on the first try without connection errors.
-
-## Manual & Advanced options (Optional)
-
-**No further setup is needed if you follow the automated installation steps above.**
-
-If you prefer manual installation via Homebrew on Linux:
-
 ```bash
-brew install Delnegend/tap/dpi-proxy
-brew services start dpi-proxy
+curl -fsSL https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/install.sh | bash
 ```
 
-For manual desktop proxy settings, custom PAC rules, or container setups, see [Configuration](docs/configuration.md).
+**Verification:** Open any blocked website or service in your browser or application: pages will load on the first try without connection errors.
 
 ## Highlights
 
 - Connect applications using ordinary HTTP proxy requests or HTTPS tunnels.
 - Split outgoing TLS traffic to help connections pass traffic inspection.
 - Run locally as a service, standalone executable, or non-root container.
-
-**Security:** The proxy has no authentication. Bind the published port to a trusted interface and use a firewall if other machines need access. Traffic between the client and the proxy is not encrypted by the proxy; HTTPS remains encrypted end to end.
-
-For container usage and release archives, see [Deployment](docs/deployment.md).
+- Survives network drops with clean connection teardowns and safe retry invariants.
 
 ## Documentation
 
-- [Configuration](docs/configuration.md)
-- [Architecture](docs/architecture.md)
-- [Deployment](docs/deployment.md)
-- [Development](docs/development.md)
+- **[Architecture](docs/architecture.md)**: HTTP proxying, TLS record splitting, and safe retry invariants.
+- **[Development](docs/development.md)**: Building from source, running tests, and cargo verification.
+- **[Deployment](docs/deployment.md)**: Installation via Homebrew, MSI, release archives, and container setups.
 
 ## License
 
-Licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE). Portions derived from [hufrea/byedpi](https://github.com/hufrea/byedpi) retain their original MIT notice.
+Dual-licensed under [MIT](LICENSE-MIT) or [Apache-2.0](LICENSE-APACHE), at your option.

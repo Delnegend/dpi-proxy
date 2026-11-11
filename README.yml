@@ -1,0 +1,41 @@
+$schema: "./README.schema.json"
+
+name: dpi-proxy
+repo: Delnegend/dpi-proxy
+tagline: "An HTTP proxy for Linux and Windows that helps bypass ISP Deep Packet Inspection (DPI) blocking."
+
+badges:
+  ci: true
+  release: true
+  license: true
+
+quick_start: |
+  ### Windows
+
+  Download and run the `.msi` installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). The installer automatically starts the background service and configures your proxy settings.
+
+  ### Linux
+
+  Run the automated setup script (installs Homebrew if missing, starts the service, and configures your desktop proxy):
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/install.sh | bash
+  ```
+
+  **Verification:** Open any blocked website or service in your browser or application: pages will load on the first try without connection errors.
+
+highlights:
+  - "Connect applications using ordinary HTTP proxy requests or HTTPS tunnels."
+  - "Split outgoing TLS traffic to help connections pass traffic inspection."
+  - "Run locally as a service, standalone executable, or non-root container."
+  - "Survives network drops with clean connection teardowns and safe retry invariants."
+
+documentation:
+  architecture: "HTTP proxying, TLS record splitting, and safe retry invariants."
+  development: "Building from source, running tests, and cargo verification."
+  deployment: "Installation via Homebrew, MSI, release archives, and container setups."
+
+license:
+  type:
+    - MIT
+    - APACHE-2.0
+  holder: "Delnegend"
