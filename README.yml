@@ -32,7 +32,7 @@ highlights:
 documentation:
   architecture: "HTTP proxying, TLS record splitting, and safe retry invariants."
   development: "Building from source, running tests, and cargo verification."
-  deployment: "Installation via Homebrew, MSI, release archives, and container setups."
+  deployment: "Installation via Homebrew, MSI, release archives, and container setups; see [configuration](docs/configuration.md) for client setup."
 
 license:
   type:

@@ -38,7 +38,7 @@ curl -fsSL https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main
 
 - **[Architecture](docs/architecture.md)**: HTTP proxying, TLS record splitting, and safe retry invariants.
 - **[Development](docs/development.md)**: Building from source, running tests, and cargo verification.
-- **[Deployment](docs/deployment.md)**: Installation via Homebrew, MSI, release archives, and container setups.
+- **[Deployment](docs/deployment.md)**: Installation via Homebrew, MSI, release archives, and container setups; see [configuration](docs/configuration.md) for client setup.
 
 ## License
 
