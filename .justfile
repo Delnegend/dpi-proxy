@@ -6,6 +6,7 @@ check:
     cargo clippy --locked --all-targets --all-features -- -D warnings
     cargo test --locked --all-targets --all-features
     cargo build --locked
+    bash tests/install.sh
     python3 tests/smoke.py
 
 version action ver="":

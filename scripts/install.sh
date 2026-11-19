@@ -200,6 +200,19 @@ configure_steam_desktop() {
         fi
     done
 
+    local autostart_file="${XDG_CONFIG_HOME:-$HOME/.config}/autostart/steam.desktop"
+    if [ -f "$autostart_file" ]; then
+        if [[ "$action" == "disable" ]]; then
+            if grep -q "^Exec=$proxy_env " "$autostart_file"; then
+                sed -i "s|^Exec=$proxy_env |Exec=|" "$autostart_file"
+                echo "Removed proxy override from Steam autostart."
+            fi
+        elif ! grep -q "^Exec=$proxy_env " "$autostart_file"; then
+            sed -i "s|^Exec=|Exec=$proxy_env |" "$autostart_file"
+            echo "Configured Steam autostart proxy override."
+        fi
+    fi
+
     if command -v update-desktop-database >/dev/null 2>&1; then
         update-desktop-database "$app_dir" >/dev/null 2>&1 || true
     fi
@@ -243,4 +256,6 @@ main() {
     echo "==> All done! dpi-proxy is configured and ready to use."
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]:-$0}" == "$0" ]]; then
+    main "$@"
+fi

@@ -80,6 +80,12 @@ Many command-line utilities, background daemons, and desktop applications honor 
 env http_proxy=http://127.0.0.1:18118 https_proxy=http://127.0.0.1:18118 no_proxy=localhost,127.0.0.1 <command>
 ```
 
+### Steam on Linux
+
+The installer configures Steam's desktop launchers and an existing `steam.desktop` autostart entry to use `127.0.0.1:18118`. Steam must be fully exited and restarted to pick up the settings. The proxy service must be running whenever Steam uses these launchers.
+
+Steam's download traffic uses the proxy, while games may also inherit the proxy settings and use them if they support them. If Steam recreates its autostart entry without the settings, rerun the installer and restart Steam.
+
 ## DPI Proxy configuration
 
 Set environment variables directly or place a `.env` file in the process's current directory. `dotenv-ng` loads the file if it exists; variables already present in the environment take precedence. Invalid values and malformed `.env` files stop startup.
