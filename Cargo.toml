@@ -41,4 +41,5 @@ as_conversions = "deny"
 
 [profile.release]
 lto = "thin"
+codegen-units = 1
 strip = true
