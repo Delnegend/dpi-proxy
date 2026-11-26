@@ -307,6 +307,132 @@ configure_steam_desktop() {
     fi
 }
 
+# 4. Configure system encrypted DNS with Cloudflare (DoH if supported, else DoT)
+has_ipv6_default_route() {
+    if [[ -n "${DPI_PROXY_FORCE_IPV6:-}" ]]; then
+        [[ "$DPI_PROXY_FORCE_IPV6" == "true" ]]
+        return
+    fi
+    command -v ip >/dev/null 2>&1 && ip -6 route show default 2>/dev/null | grep -q .
+}
+
+resolved_supports_doh() {
+    if [[ -n "${DPI_PROXY_FORCE_RESOLVED_DOH:-}" ]]; then
+        [[ "$DPI_PROXY_FORCE_RESOLVED_DOH" == "true" ]]
+        return
+    fi
+    command -v resolvectl >/dev/null 2>&1 && resolvectl --help 2>/dev/null | grep -qi 'dnsoverhttps'
+}
+
+systemd_resolved_active() {
+    if [[ -n "${DPI_PROXY_FORCE_RESOLVED_ACTIVE:-}" ]]; then
+        [[ "$DPI_PROXY_FORCE_RESOLVED_ACTIVE" == "true" ]]
+        return
+    fi
+    if command -v systemctl >/dev/null 2>&1 && systemctl is-active --quiet systemd-resolved 2>/dev/null; then
+        return 0
+    fi
+    [ -e /run/systemd/resolve/stub-resolv.conf ]
+}
+
+acquire_root_runner() {
+    if [[ -n "${DPI_PROXY_SUDO_CMD+x}" ]]; then
+        ROOT_RUNNER=("${DPI_PROXY_SUDO_CMD}")
+        if [ -z "${DPI_PROXY_SUDO_CMD}" ]; then
+            ROOT_RUNNER=()
+        fi
+        return 0
+    fi
+
+    if [[ "${EUID:-$(id -u)}" -eq 0 ]]; then
+        ROOT_RUNNER=()
+        return 0
+    fi
+
+    if ! command -v sudo >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if sudo -n true 2>/dev/null; then
+        ROOT_RUNNER=(sudo)
+        return 0
+    fi
+
+    # Authenticate using /dev/tty so piped runs (curl ... | bash) do not consume script stdin.
+    if [ -r /dev/tty ]; then
+        echo "Administrator privileges are needed to configure system encrypted DNS."
+        # shellcheck disable=SC2024
+        if sudo -v < /dev/tty; then
+            ROOT_RUNNER=(sudo)
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+configure_dns() {
+    local action="${1:-enable}"
+    local conf_dir="${DPI_PROXY_RESOLVED_CONF_DIR:-/etc/systemd/resolved.conf.d}"
+    local conf_file="$conf_dir/dpi-proxy.conf"
+
+    if ! systemd_resolved_active; then
+        echo "Note: systemd-resolved is not active; skipping system DNS configuration."
+        return 0
+    fi
+
+    local ROOT_RUNNER=()
+    if ! acquire_root_runner; then
+        echo "Note: Could not obtain administrator privileges; skipping system DNS configuration."
+        echo "See docs/configuration.md to configure Cloudflare encrypted DNS manually."
+        return 0
+    fi
+
+    if [[ "$action" == "disable" ]]; then
+        if [ -f "$conf_file" ]; then
+            "${ROOT_RUNNER[@]}" rm -f "$conf_file"
+            if [[ -z "${DPI_PROXY_SKIP_SYSTEMCTL:-}" ]] && command -v systemctl >/dev/null 2>&1; then
+                "${ROOT_RUNNER[@]}" systemctl restart systemd-resolved 2>/dev/null || true
+            fi
+            echo "Removed dpi-proxy encrypted DNS configuration."
+        fi
+        return 0
+    fi
+
+    local dns_servers="1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com"
+    if has_ipv6_default_route; then
+        dns_servers="$dns_servers 2606:4700:4700::1111#cloudflare-dns.com 2606:4700:4700::1001#cloudflare-dns.com"
+    fi
+
+    local mode_label=""
+    local mode_setting=""
+    if resolved_supports_doh; then
+        mode_label="DNS over HTTPS (DoH)"
+        mode_setting="DNSOverHTTPS=yes"
+    else
+        mode_label="DNS over TLS (DoT)"
+        mode_setting="DNSOverTLS=yes"
+    fi
+
+    "${ROOT_RUNNER[@]}" mkdir -p "$conf_dir"
+    "${ROOT_RUNNER[@]}" tee "$conf_file" >/dev/null <<EOF
+# Managed by dpi-proxy install script
+[Resolve]
+DNS=$dns_servers
+$mode_setting
+Domains=~.
+EOF
+
+    if [[ -z "${DPI_PROXY_SKIP_SYSTEMCTL:-}" ]] && command -v systemctl >/dev/null 2>&1; then
+        "${ROOT_RUNNER[@]}" systemctl restart systemd-resolved
+        if command -v resolvectl >/dev/null 2>&1; then
+            "${ROOT_RUNNER[@]}" resolvectl flush-caches 2>/dev/null || true
+        fi
+    fi
+
+    echo "System DNS configured with Cloudflare $mode_label."
+}
+
 main() {
     local action="enable"
     if [[ "${1:-}" == "--disable" || "${1:-}" == "--undo" || "${1:-}" == "disable" ]]; then
@@ -322,6 +448,7 @@ main() {
             configure_gnome "disable"
         fi
         configure_steam_desktop "disable"
+        configure_dns "disable"
         exit 0
     fi
 
@@ -344,6 +471,9 @@ main() {
 
     echo "==> Configuring application launchers..."
     configure_steam_desktop "enable"
+
+    echo "==> Configuring encrypted DNS..."
+    configure_dns "enable"
 
     echo "==> All done! dpi-proxy is configured and ready to use."
 }

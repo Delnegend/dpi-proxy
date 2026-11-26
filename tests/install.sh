@@ -106,4 +106,27 @@ for variant in "KDE" "KDE:Plasma"; do
     [ "$rc" -eq 0 ]
 done
 
-echo 'Steam launchers, autostart, and desktop detection verified'
+# Test DNS configuration: DoT fallback (IPv4-only and dual-stack) and DoH when supported
+export DPI_PROXY_RESOLVED_CONF_DIR="$tmp_dir/resolved.conf.d"
+export DPI_PROXY_SUDO_CMD=""
+export DPI_PROXY_SKIP_SYSTEMCTL="1"
+export DPI_PROXY_FORCE_RESOLVED_ACTIVE="true"
+
+DPI_PROXY_FORCE_RESOLVED_DOH="false" DPI_PROXY_FORCE_IPV6="false" configure_dns enable >/dev/null
+dns_conf="$DPI_PROXY_RESOLVED_CONF_DIR/dpi-proxy.conf"
+[ -f "$dns_conf" ]
+grep -Fxq 'DNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com' "$dns_conf"
+grep -Fxq 'DNSOverTLS=yes' "$dns_conf"
+grep -Fxq 'Domains=~.' "$dns_conf"
+
+DPI_PROXY_FORCE_RESOLVED_DOH="false" DPI_PROXY_FORCE_IPV6="true" configure_dns enable >/dev/null
+grep -Fxq 'DNS=1.1.1.1#cloudflare-dns.com 1.0.0.1#cloudflare-dns.com 2606:4700:4700::1111#cloudflare-dns.com 2606:4700:4700::1001#cloudflare-dns.com' "$dns_conf"
+grep -Fxq 'DNSOverTLS=yes' "$dns_conf"
+
+DPI_PROXY_FORCE_RESOLVED_DOH="true" DPI_PROXY_FORCE_IPV6="false" configure_dns enable >/dev/null
+grep -Fxq 'DNSOverHTTPS=yes' "$dns_conf"
+
+configure_dns disable >/dev/null
+[ ! -e "$dns_conf" ]
+
+echo 'Steam launchers, autostart, desktop detection, and encrypted DNS verified'
