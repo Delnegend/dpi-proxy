@@ -17,6 +17,31 @@
     <Feature Id="MainFeature" Title="DPI Proxy" Level="1">
       <ComponentGroupRef Id="ProductComponents" />
     </Feature>
+
+    <CustomAction Id="ConfigureCloudflareDns"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand='"[System64Folder]WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "[INSTALLFOLDER]configure-dns.ps1" -Action Install'
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+    <CustomAction Id="RollbackCloudflareDns"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand='"[System64Folder]WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "[INSTALLFOLDER]configure-dns.ps1" -Action Uninstall'
+                  Execute="rollback"
+                  Impersonate="no"
+                  Return="ignore" />
+    <CustomAction Id="RestoreCloudflareDns"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand='"[System64Folder]WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File "[INSTALLFOLDER]configure-dns.ps1" -Action Uninstall'
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="RollbackCloudflareDns" Before="ConfigureCloudflareDns" Condition="NOT Installed AND NOT WIX_UPGRADE_DETECTED" />
+      <Custom Action="ConfigureCloudflareDns" Before="InstallFinalize" Condition="NOT REMOVE" />
+      <Custom Action="RestoreCloudflareDns" Before="RemoveFiles" Condition='REMOVE="ALL" AND NOT UPGRADINGPRODUCTCODE' />
+    </InstallExecuteSequence>
   </Package>
 
   <Fragment>
@@ -27,6 +52,8 @@
               KeyPath="yes" />
         <File Id="ProxyPac"
               Source="scripts\proxy.pac" />
+        <File Id="ConfigureDnsScript"
+              Source="installer\configure-dns.ps1" />
         <File Id="LicenseMit"
               Source="LICENSE-MIT" />
         <File Id="LicenseApache"
