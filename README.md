@@ -4,9 +4,9 @@
 
 **An HTTP proxy for Linux and Windows that helps bypass ISP Deep Packet Inspection (DPI) blocking.**
 
-[![CI](https://img.shields.io/github/actions/workflow/status/Delnegend/dpi-proxy/ci.yml?branch=main&style=flat-square)](https://github.com/Delnegend/dpi-proxy/actions)
-[![Release](https://img.shields.io/github/v/release/Delnegend/dpi-proxy?style=flat-square)](https://github.com/Delnegend/dpi-proxy/releases)
-[![License](https://img.shields.io/badge/license-MIT%20%7C%20Apache--2.0-blue?style=flat-square)](LICENSE-MIT)
+[![CI](https://badgers.space/github/checks/Delnegend/dpi-proxy/main?corner_radius=0&label=build)](https://github.com/Delnegend/dpi-proxy/actions)
+[![Release](https://badgers.space/github/release/Delnegend/dpi-proxy?corner_radius=0&color=ea7233)](https://github.com/Delnegend/dpi-proxy/releases)
+[![License](https://badgers.space/badge/license/MIT%20%7C%20Apache-2.0/007ec6?corner_radius=0)](LICENSE-MIT)
 
 </div>
 
