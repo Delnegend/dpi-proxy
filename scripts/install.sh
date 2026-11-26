@@ -92,8 +92,8 @@ detect_desktop() {
     IFS=":" read -ra desktops <<< "$current"
     for d in "${desktops[@]}"; do
         case "${d^^}" in
-            KDE) return 0 ;;
-            GNOME) return 1 ;;
+            *KDE*|*PLASMA*) return 0 ;;
+            *GNOME*) return 1 ;;
         esac
     done
 
@@ -165,51 +165,140 @@ configure_gnome() {
     echo "GNOME configured with proxy.pac."
 }
 
+patch_desktop_file() {
+    local file="$1"
+    local action="$2"
+    local proxy_env="$3"
+
+    [ -f "$file" ] || return 1
+
+    if [[ "$action" == "disable" ]]; then
+        if grep -qE '^Exec=env http_proxy=[^ ]* https_proxy=[^ ]* no_proxy=[^ ]* ' "$file"; then
+            chmod u+w "$file" 2>/dev/null || true
+            sed -i 's|^Exec=env http_proxy=[^ ]* https_proxy=[^ ]* no_proxy=[^ ]* |Exec=|' "$file"
+            return 0
+        fi
+        return 1
+    fi
+
+    local changed=false
+    if grep -q '^Exec=' "$file" && grep '^Exec=' "$file" | grep -qvF "Exec=$proxy_env "; then
+        chmod u+w "$file" 2>/dev/null || true
+        sed -i \
+            -e 's|^Exec=env http_proxy=[^ ]* https_proxy=[^ ]* no_proxy=[^ ]* |Exec=|' \
+            -e "s|^Exec=\(env http_proxy=[^ ]* \)*|Exec=$proxy_env |" \
+            "$file"
+        changed=true
+    fi
+
+    # GNOME ignores Exec= when DBusActivatable=true is set on a launcher.
+    if grep -q '^DBusActivatable=true$' "$file"; then
+        chmod u+w "$file" 2>/dev/null || true
+        sed -i 's|^DBusActivatable=true$|DBusActivatable=false|' "$file"
+        changed=true
+    fi
+
+    [ "$changed" = true ]
+}
+
 configure_steam_desktop() {
     local action="${1:-enable}"
     local proxy_env="env http_proxy=http://127.0.0.1:$PORT https_proxy=http://127.0.0.1:$PORT no_proxy=localhost,127.0.0.1,steamloopback.host"
-    local app_dir="$HOME/.local/share/applications"
-    local sys_apps=("/usr/share/applications/steam.desktop" "/usr/share/applications/bazzite-steam-bpm.desktop")
+    local app_dir="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+    local sys_apps_dir="${DPI_PROXY_SYS_APPS_DIR:-/usr/share/applications}"
+    local flatpak_sys_apps="${DPI_PROXY_FLATPAK_SYS_APPS_DIR:-/var/lib/flatpak/exports/share/applications}"
+    local flatpak_user_apps="${XDG_DATA_HOME:-$HOME/.local/share}/flatpak/exports/share/applications"
+    local sys_apps=(
+        "$sys_apps_dir/steam.desktop"
+        "$sys_apps_dir/bazzite-steam-bpm.desktop"
+        "$sys_apps_dir/steam-native.desktop"
+        "$sys_apps_dir/steam-runtime.desktop"
+        "$flatpak_sys_apps/com.valvesoftware.Steam.desktop"
+        "$flatpak_user_apps/com.valvesoftware.Steam.desktop"
+    )
 
     mkdir -p "$app_dir"
 
+    local handled=""
     for sys_file in "${sys_apps[@]}"; do
         local filename
         filename="$(basename "$sys_file")"
+        case " $handled " in
+            *" $filename "*) continue ;;
+        esac
+
         local user_file="$app_dir/$filename"
 
         if [[ "$action" == "disable" ]]; then
-            if [ -f "$user_file" ] && grep -q "127.0.0.1:$PORT" "$user_file"; then
-                sed -i 's|^Exec=env http_proxy=[^ ]* https_proxy=[^ ]* no_proxy=[^ ]* |Exec=|' "$user_file"
+            if patch_desktop_file "$user_file" "disable" "$proxy_env"; then
                 echo "Removed proxy override from $filename."
             fi
+            handled="$handled $filename"
             continue
         fi
 
-        [ -f "$sys_file" ] || continue
-
         if [ ! -f "$user_file" ]; then
-            cp "$sys_file" "$user_file"
+            [ -f "$sys_file" ] || continue
+            cp --remove-destination "$sys_file" "$user_file"
+            chmod u+w "$user_file" 2>/dev/null || true
         fi
 
-        if ! grep -q "127.0.0.1:$PORT" "$user_file"; then
-            sed -i "s|^Exec=\(env http_proxy=[^ ]* \)*|Exec=$proxy_env |" "$user_file"
+        handled="$handled $filename"
+
+        if patch_desktop_file "$user_file" "enable" "$proxy_env"; then
             echo "Configured launcher proxy override in $filename."
         else
             echo "Launcher $filename is already configured."
         fi
     done
 
-    local autostart_file="${XDG_CONFIG_HOME:-$HOME/.config}/autostart/steam.desktop"
-    if [ -f "$autostart_file" ]; then
+    # Also update a user Desktop shortcut if one exists.
+    local desktop_shortcut="${XDG_DESKTOP_DIR:-$HOME/Desktop}/steam.desktop"
+    if [ -f "$desktop_shortcut" ]; then
         if [[ "$action" == "disable" ]]; then
-            if grep -q "^Exec=$proxy_env " "$autostart_file"; then
-                sed -i "s|^Exec=$proxy_env |Exec=|" "$autostart_file"
+            if patch_desktop_file "$desktop_shortcut" "disable" "$proxy_env"; then
+                echo "Removed proxy override from Desktop Steam shortcut."
+            fi
+        elif patch_desktop_file "$desktop_shortcut" "enable" "$proxy_env"; then
+            echo "Configured Desktop Steam shortcut proxy override."
+        fi
+    fi
+
+    # Configure Flatpak Steam sandbox environment if Flatpak Steam is installed.
+    if command -v flatpak >/dev/null 2>&1 && flatpak info com.valvesoftware.Steam >/dev/null 2>&1; then
+        if [[ "$action" == "disable" ]]; then
+            flatpak override --user --unset-env=http_proxy --unset-env=https_proxy --unset-env=no_proxy com.valvesoftware.Steam >/dev/null 2>&1 || true
+            echo "Removed Flatpak Steam proxy override."
+        else
+            flatpak override --user \
+                --env="http_proxy=http://127.0.0.1:$PORT" \
+                --env="https_proxy=http://127.0.0.1:$PORT" \
+                --env="no_proxy=localhost,127.0.0.1,steamloopback.host" \
+                com.valvesoftware.Steam >/dev/null 2>&1 || true
+            echo "Configured Flatpak Steam proxy override."
+        fi
+    fi
+
+    local autostart_dir="${XDG_CONFIG_HOME:-$HOME/.config}/autostart"
+    local autostart_file="$autostart_dir/steam.desktop"
+    local sys_autostart="${DPI_PROXY_SYS_AUTOSTART:-/etc/xdg/autostart/steam.desktop}"
+
+    if [[ "$action" == "disable" ]]; then
+        if [ -f "$autostart_file" ]; then
+            if patch_desktop_file "$autostart_file" "disable" "$proxy_env"; then
                 echo "Removed proxy override from Steam autostart."
             fi
-        elif ! grep -q "^Exec=$proxy_env " "$autostart_file"; then
-            sed -i "s|^Exec=|Exec=$proxy_env |" "$autostart_file"
-            echo "Configured Steam autostart proxy override."
+        fi
+    else
+        if [ ! -f "$autostart_file" ] && [ -f "$sys_autostart" ]; then
+            mkdir -p "$autostart_dir"
+            cp --remove-destination "$sys_autostart" "$autostart_file"
+            chmod u+w "$autostart_file" 2>/dev/null || true
+        fi
+        if [ -f "$autostart_file" ]; then
+            if patch_desktop_file "$autostart_file" "enable" "$proxy_env"; then
+                echo "Configured Steam autostart proxy override."
+            fi
         fi
     fi
 
@@ -225,9 +314,11 @@ main() {
     fi
 
     if [[ "$action" == "disable" ]]; then
-        if detect_desktop; then
+        local desktop_rc=0
+        detect_desktop || desktop_rc=$?
+        if [[ $desktop_rc -eq 0 ]]; then
             configure_kde "disable"
-        elif [[ $? -eq 1 ]]; then
+        elif [[ $desktop_rc -eq 1 ]]; then
             configure_gnome "disable"
         fi
         configure_steam_desktop "disable"
@@ -239,15 +330,16 @@ main() {
     ensure_dpi_proxy_running
 
     echo "==> Configuring desktop proxy..."
-    if detect_desktop; then
+    local desktop_rc=0
+    detect_desktop || desktop_rc=$?
+    if [[ $desktop_rc -eq 0 ]]; then
         configure_kde "enable"
-    elif [[ $? -eq 1 ]]; then
+    elif [[ $desktop_rc -eq 1 ]]; then
         configure_gnome "enable"
     else
         echo "Note: Desktop environment is not GNOME or KDE Plasma."
         echo "Proxy service is running on 127.0.0.1:$PORT."
-        echo "See docs/configuration.md to configure your desktop or app manually."
-        exit 0
+        echo "See docs/configuration.md to configure your desktop proxy manually."
     fi
 
     echo "==> Configuring application launchers..."
