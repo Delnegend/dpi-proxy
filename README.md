@@ -16,11 +16,11 @@
 
 ### Windows
 
-Download and run the `.msi` installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). The installer automatically starts the background service and configures your proxy settings.
+Download and run the `.msi` installer from [GitHub Releases](https://github.com/Delnegend/dpi-proxy/releases/latest). The installer automatically starts the background service, configures your proxy settings, and enables Cloudflare DNS over HTTPS (DoH).
 
 ### Linux
 
-Run the automated setup script (installs Homebrew if missing, starts the service, and configures your desktop proxy):
+Run the automated setup script (installs Homebrew if missing, starts the service, configures your desktop proxy, and enables Cloudflare encrypted DNS):
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Delnegend/dpi-proxy/refs/heads/main/scripts/install.sh | bash
 ```

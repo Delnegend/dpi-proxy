@@ -9,7 +9,7 @@ PAC script URL:
 
 ### Windows
 
-The MSI installer configures the PAC script automatically during installation.
+The MSI installer automatically configures the PAC script and sets physical network adapters to use Cloudflare DNS (`1.1.1.1` / `1.0.0.1`, plus `2606:4700:4700::1111` / `2606:4700:4700::1001` when IPv6 is routed) with Windows DNS over HTTPS (DoH) enabled. Virtual adapters such as Tailscale are left untouched, and uninstalling restores the previous DNS settings.
 
 #### Automatic PAC script
 - **GUI:** In Windows Search, type **Proxy settings** and open it. Under **Automatic proxy setup**, turn on **Use setup script**, paste the PAC URL into **Script address**, and click **Save**.
@@ -82,9 +82,13 @@ env http_proxy=http://127.0.0.1:18118 https_proxy=http://127.0.0.1:18118 no_prox
 
 ### Steam on Linux
 
-The installer configures Steam's desktop launchers and an existing `steam.desktop` autostart entry to use `127.0.0.1:18118`. Steam must be fully exited and restarted to pick up the settings. The proxy service must be running whenever Steam uses these launchers.
+The installer configures Steam's application launchers (`steam.desktop`, `bazzite-steam-bpm.desktop`, Flatpak `com.valvesoftware.Steam`, and any Desktop shortcut) as well as user and system (`/etc/xdg/autostart/steam.desktop`) autostart entries to use `127.0.0.1:18118`, and disables `DBusActivatable` on user overrides so GNOME honors the `Exec=` line. Steam must be fully exited and restarted to pick up the settings. The proxy service must be running whenever Steam uses these launchers.
 
 Steam's download traffic uses the proxy, while games may also inherit the proxy settings and use them if they support them. If Steam recreates its autostart entry without the settings, rerun the installer and restart Steam.
+
+### Encrypted DNS on Linux
+
+When `systemd-resolved` is active, the Linux installer writes `/etc/systemd/resolved.conf.d/dpi-proxy.conf` to route DNS through Cloudflare (`1.1.1.1#cloudflare-dns.com` and `1.0.0.1#cloudflare-dns.com`, plus IPv6 when an IPv6 default route is present). It uses DNS over HTTPS (DoH) if supported by `systemd-resolved` and falls back to DNS over TLS (DoT) otherwise. Running `scripts/install.sh --disable` removes this drop-in file and restarts `systemd-resolved`.
 
 ## DPI Proxy configuration
 
